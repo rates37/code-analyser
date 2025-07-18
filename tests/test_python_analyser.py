@@ -1,4 +1,3 @@
-import pytest
 from code_analyser.languages.python import PythonAnalyser
 from pathlib import Path
 from code_analyser.core.engine import AnalyserEngine
@@ -192,6 +191,8 @@ def main():
     y = 2
     z = 3 # unused
     a,b = 1,2 # multiple assignment on single line
+    c,d = (3,4) # tuple unpacking
+    e,f = [5,6] # list unpacking
 
     def inner_function():
         # inner comment
@@ -214,10 +215,10 @@ def unused_function():
     ids = analyser.get_identifiers(ast_node)
     assert set(['main', 'inner_function']).issubset(ids.functions)
     assert set(['Foo']).issubset(ids.classes)
-    assert set(['x', 'y', 'z', 'a', 'b']).issubset(ids.variables) # currently fails
-    assert analyser.count_comments(ast_node, source) == 6
+    assert set(['x', 'y', 'z', 'a', 'b', 'c', 'd', 'e', 'f']).issubset(ids.variables) # currently fails
+    assert analyser.count_comments(ast_node, source) == 8
     unused = analyser.find_unused(ast_node)
-    unused_functions = [name for name,_ in unused.unused_functions]
-    unused_variables = [name for name,_ in unused.unused_variables]
-    assert 'z' in unused_variables
+    unused_functions = set([name for name,_ in unused.unused_functions])
+    unused_variables = set([name for name,_ in unused.unused_variables])
+    assert set(['z', 'a', 'b', 'c', 'd', 'e', 'f']).issubset(unused_variables)
     assert 'unused_function' in unused_functions

@@ -31,6 +31,10 @@ class PythonAnalyser(LanguageAnalyser):
                 for target in node.targets:
                     if isinstance(target, ast.Name):
                         variables.add(target.id)
+                    elif isinstance(target, (ast.Tuple, ast.List)):
+                        for v in target.elts:
+                            if isinstance(v, ast.Name):
+                                variables.add(v.id)
 
             # all functions must be defined somewhere,
             #  so can find all function names by
@@ -92,6 +96,10 @@ class PythonAnalyser(LanguageAnalyser):
                 for target in node.targets:
                     if isinstance(target, ast.Name):
                         declared_variables[target.id] = node.lineno
+                    elif isinstance(target, (ast.Tuple, ast.List)):
+                        for v in target.elts:
+                            if isinstance(v, ast.Name):
+                                declared_variables[v.id] = node.lineno
 
             elif isinstance(node, ast.FunctionDef):
                 declared_functions[node.name] = node.lineno
