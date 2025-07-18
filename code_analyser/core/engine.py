@@ -40,4 +40,25 @@ class AnalyserEngine:
         Returns:
             AnalyserResult: Contains identifiers, brace report, comment count, and unused attributes report
         """
-        pass
+        path_str = os.fspath(filepath)
+        file_ext = os.path.splitext(path_str)[1]
+        AnalyserClass = self.language_map.get(file_ext)
+        if not AnalyserClass:
+            raise ValueError(f"No analyser for extension: {file_ext}")
+
+        with open(path_str, 'r', encoding='utf-8') as f:
+            source = f.read()
+        
+        analyser = AnalyserClass()
+        ast = analyser.parse(source)
+        identifiers = analyser.get_identifiers(ast)
+        brace_report = analyser.check_brace_style(source, brace_config) if brace_config else None
+        comment_count = analyser.count_comments(ast, source)
+        unused_report = analyser.find_unused(ast)
+
+        return AnalyserResult(
+            identifiers,
+            brace_report,
+            comment_count,
+            unused_report
+        )
