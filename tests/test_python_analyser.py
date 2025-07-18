@@ -137,3 +137,87 @@ x = """
     count = analyser.count_comments(ast_node, source)
     assert count == 1
 
+def test_python_docstring_only():
+    source = '''
+"""Module docstring"""
+def foo():
+    pass
+'''
+    analyser = PythonAnalyser()
+    ast_node = analyser.parse(source)
+    count = analyser.count_comments(ast_node, source)
+    assert count == 1
+    
+def test_python_multiline_and_docstring():
+    source = '''
+"""Module docstring"""
+
+"""Multiline 
+comment
+"""
+def foo():
+    pass
+'''
+    analyser = PythonAnalyser()
+    ast_node = analyser.parse(source)
+    count = analyser.count_comments(ast_node, source)
+    assert count == 2
+
+
+def test_python_no_comments():
+    source = '''
+def foo():
+    pass
+'''
+    analyser = PythonAnalyser()
+    ast_node = analyser.parse(source)
+    count = analyser.count_comments(ast_node, source)
+    assert count == 0
+
+
+def test_python_empty_file():
+    source = ""
+    analyser = PythonAnalyser()
+    ast_node = analyser.parse(source)
+    count = analyser.count_comments(ast_node, source)
+    assert count == 0
+
+def test_python_complex_integration():
+    source = '''
+"""Module docstring"""
+import os
+
+def main():
+    x = 1
+    y = 2
+    z = 3 # unused
+    a,b = 1,2 # multiple assignment on single line
+
+    def inner_function():
+        # inner comment
+        return x+y
+    return inner()
+
+class Foo:
+    """Class docstring"""
+    value = 42
+    def method():
+        raise ValueError("Oops")
+
+def unused_function():
+    pass
+
+# lonely comment
+'''
+    analyser = PythonAnalyser()
+    ast_node = analyser.parse(source)
+    ids = analyser.get_identifiers(ast_node)
+    assert set(['main', 'inner_function']).issubset(ids.functions)
+    assert set(['Foo']).issubset(ids.classes)
+    assert set(['x', 'y', 'z', 'a', 'b']).issubset(ids.variables) # currently fails
+    assert analyser.count_comments(ast_node, source) == 6
+    unused = analyser.find_unused(ast_node)
+    unused_functions = [name for name,_ in unused.unused_functions]
+    unused_variables = [name for name,_ in unused.unused_variables]
+    assert 'z' in unused_variables
+    assert 'unused_function' in unused_functions
