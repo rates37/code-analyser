@@ -100,3 +100,17 @@ def test_java_unused_detection():
     assert 'x' not in unused_variables
     assert 'y' not in unused_variables
     assert 'foo' not in unused_functions
+
+def test_java_comment_count_slash_in_string():
+    source = '''
+// This is a comment
+public class HelloWorld {
+    public static void main(String[] args) {
+        String s = "Hello // there are slashes in this string";
+    }
+}
+'''
+    analyser = JavaAnalyser()
+    ast = analyser.parse(source)
+    count = analyser.count_comments(ast, source)
+    assert count == 1
