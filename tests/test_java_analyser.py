@@ -59,6 +59,21 @@ def test_java_brace_style_kr():
     assert report.violations == []
 
 
+def test_java_brace_style_kr_violations():
+    source = '''
+public class Test
+{
+    public static void main(String[] args)
+    {
+        int x = 0;
+    }
+}
+'''
+    analyser = JavaAnalyser()
+    report = analyser.check_brace_style(source, BraceConfig('K&R'))
+    assert len(report.violations) == 2
+
+
 def test_java_brace_style_allman():
     source = '''
 public class HelloWorld
@@ -72,6 +87,19 @@ public class HelloWorld
     analyser = JavaAnalyser()
     report = analyser.check_brace_style(source, BraceConfig('Allman'))
     assert report.violations == []
+
+
+def test_java_brace_style_allman_violations():
+    source = '''
+public class Test {
+    public static void main(String[] args) {
+        int x = 0;
+    }
+}
+'''
+    analyser = JavaAnalyser()
+    report = analyser.check_brace_style(source, BraceConfig('Allman'))
+    assert len(report.violations) == 2
 
 
 def test_java_brace_style_whitesmith():
@@ -89,6 +117,89 @@ public class HelloWorld
     assert report.violations == []
 
 
+def test_java_brace_style_whitesmith_violations():
+    source = '''
+public class Test {
+    public static void main(String[] args) {
+        int x = 0;
+    }
+}
+'''
+    analyser = JavaAnalyser()
+    report = analyser.check_brace_style(source, BraceConfig('Whitesmith'))
+    assert len(report.violations) == 2
+
+
+def test_java_brace_style_mixed_violations():
+    source = '''
+public class Test {
+    public static void main(String[] args)
+    {
+        int x = 0;
+    }
+}
+'''
+    analyser = JavaAnalyser()
+    report = analyser.check_brace_style(source, BraceConfig('K&R'))
+    assert len(report.violations) == 1
+    report = analyser.check_brace_style(source, BraceConfig('Allman'))
+    assert len(report.violations) == 1
+    report = analyser.check_brace_style(source, BraceConfig('Whitesmith'))
+    assert len(report.violations) == 1
+
+
+def test_java_brace_style_empty_blocks():
+    # should not treat unimplemented functions as violations:
+    source = '''
+public class Test {
+    public void empty() {}
+    public void empty2() {
+    }
+}
+'''
+    analyser = JavaAnalyser()
+    report = analyser.check_brace_style(source, BraceConfig('K&R'))
+    assert len(report.violations) == 0
+
+
+def test_java_brace_style_interface_and_enum():
+    source = '''
+public interface TestInterface {
+    void method1();
+    void method2();
+}
+
+public enum TestEnum {
+    VALUE1, VALUE2;
+
+    public void method() {
+        System.out.println("test");
+    }
+}
+'''
+    analyser = JavaAnalyser()
+    report = analyser.check_brace_style(source, BraceConfig('K&R'))
+    assert len(report.violations) == 0
+
+
+def test_java_brace_style_array_initialisation():
+    source = '''
+public class Test {
+    public static void main(String[] args) {
+        int[] array = {1,2,3};
+        int[][] matrix = {{1,2}, {3,4}};
+    }
+}
+'''
+    analyser = JavaAnalyser()
+    report = analyser.check_brace_style(source, BraceConfig('K&R'))
+    assert len(report.violations) == 0
+    report = analyser.check_brace_style(source, BraceConfig('Allman'))
+    assert len(report.violations) == 0
+    report = analyser.check_brace_style(source, BraceConfig('Whitesmith'))
+    assert len(report.violations) == 0
+
+
 def test_java_unused_detection():
     analyser = JavaAnalyser()
     ast = analyser.parse(JAVA_SOURCE)
@@ -100,6 +211,7 @@ def test_java_unused_detection():
     assert 'x' not in unused_variables
     assert 'y' not in unused_variables
     assert 'foo' not in unused_functions
+
 
 def test_java_comment_count_slash_in_string():
     source = '''
@@ -114,6 +226,7 @@ public class HelloWorld {
     ast = analyser.parse(source)
     count = analyser.count_comments(ast, source)
     assert count == 1
+
 
 def test_java_comment_count_multiline_comment_in_string():
     source = '''
