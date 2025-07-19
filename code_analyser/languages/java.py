@@ -72,9 +72,45 @@ class JavaAnalyser(LanguageAnalyser):
     def count_comments(self, ast: javalang.tree.CompilationUnit, source: str) -> int:
         if not source:
             return 0
-        single_line_comments = len(re.findall(r'//.*', source, re.MULTILINE))
-        multi_line_comments = len(re.findall(r'/\*.*?\*/', source, re.DOTALL))
-        return single_line_comments + multi_line_comments
+        single_line_comment_count = 0
+        multi_line_comment_count = 0
+        in_string = False
+        escape_next = False
+        for line in source.splitlines():
+            i = 0
+            while i < len(line):
+                ch = line[i]
+
+                if escape_next:
+                    escape_next = False
+                    i += 1
+                    continue
+
+                if ch == '\\':
+                    escape_next = True
+                    i += 1
+                    continue
+
+                if ch == '"':
+                    in_string = not in_string
+                    i += 1
+                    continue
+
+                if not in_string and line[i:i+2] == '//':
+                    single_line_comment_count += 1
+                    break
+
+                if not in_string and line[i:i+2] == '/*':
+                    multi_line_comment_count += 1
+                    # skip to end of multilie comment
+                    while i < len(line) and line[i:i+2] != '*/':
+                        i += 1
+                    if i < len(line):
+                        i += 2
+                    continue
+                i += 1
+
+        return single_line_comment_count + multi_line_comment_count
 
     def find_unused(self, ast_node: javalang.tree.CompilationUnit) -> UnusedReport:
         declared_variables = {}

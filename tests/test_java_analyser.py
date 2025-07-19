@@ -114,3 +114,17 @@ public class HelloWorld {
     ast = analyser.parse(source)
     count = analyser.count_comments(ast, source)
     assert count == 1
+
+def test_java_comment_count_multiline_comment_in_string():
+    source = '''
+// This is a comment
+public class HelloWorld {
+    public static void main(String[] args) {
+        String s = "Hello /* this looks like a multiline comment but its not, it's a string */";
+    }
+}
+'''
+    analyser = JavaAnalyser()
+    ast = analyser.parse(source)
+    count = analyser.count_comments(ast, source)
+    assert count == 1
