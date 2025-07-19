@@ -195,9 +195,9 @@ public class Test {
     report = analyser.check_brace_style(source, BraceConfig('K&R'))
     assert len(report.violations) == 0
     report = analyser.check_brace_style(source, BraceConfig('Allman'))
-    assert len(report.violations) == 0
+    assert len(report.violations) == 4
     report = analyser.check_brace_style(source, BraceConfig('Whitesmith'))
-    assert len(report.violations) == 0
+    assert len(report.violations) == 4
 
 
 def test_java_unused_detection():
