@@ -48,11 +48,12 @@ class AnalyserEngine:
 
         with open(path_str, 'r', encoding='utf-8') as f:
             source = f.read()
-        
+
         analyser = AnalyserClass()
         ast = analyser.parse(source)
         identifiers = analyser.get_identifiers(ast)
-        brace_report = analyser.check_brace_style(source, brace_config) if brace_config else None
+        brace_report = analyser.check_brace_style(
+            source, brace_config) if brace_config else None
         comment_count = analyser.count_comments(ast, source)
         unused_report = analyser.find_unused(ast)
 

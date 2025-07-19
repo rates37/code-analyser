@@ -2,6 +2,7 @@ from code_analyser.languages.python import PythonAnalyser
 from pathlib import Path
 from code_analyser.core.engine import AnalyserEngine
 
+
 def test_python_identifiers():
     source = '''
 
@@ -60,8 +61,8 @@ def bar():
 '''
     ast_node = analyser.parse(source)
     unused = analyser.find_unused(ast_node)
-    unused_variables = [name for name,_ in unused.unused_variables]
-    unused_functions = [name for name,_ in unused.unused_functions]
+    unused_variables = [name for name, _ in unused.unused_variables]
+    unused_functions = [name for name, _ in unused.unused_functions]
 
     assert 'x' not in unused_variables
     assert 'y' in unused_variables
@@ -106,13 +107,13 @@ class Bar:
     assert result.identifiers.functions == {'foo'}
     assert result.identifiers.variables == {'x', 'y'}
     assert result.identifiers.classes == {'Bar'}
-    
+
     # check comment count:
     assert result.comment_count == 1
 
-    # check unused: 
-    assert [name for name,_ in result.unused_report.unused_functions] == ['foo']
-    assert [name for name,_ in result.unused_report.unused_variables] == ['y']
+    # check unused:
+    assert [name for name, _ in result.unused_report.unused_functions] == ['foo']
+    assert [name for name, _ in result.unused_report.unused_variables] == ['y']
 
 
 def test_python_comment_hash_in_string():
@@ -125,6 +126,7 @@ x = "# this is NOT a comment"
     count = analyser.count_comments(ast_node, source)
     assert count == 1
 
+
 def test_python_comment_hash_in_multiline_string():
     source = '''
 x = """
@@ -136,6 +138,7 @@ x = """
     count = analyser.count_comments(ast_node, source)
     assert count == 1
 
+
 def test_python_docstring_only():
     source = '''
 """Module docstring"""
@@ -146,7 +149,8 @@ def foo():
     ast_node = analyser.parse(source)
     count = analyser.count_comments(ast_node, source)
     assert count == 1
-    
+
+
 def test_python_multiline_and_docstring():
     source = '''
 """Module docstring"""
@@ -180,6 +184,7 @@ def test_python_empty_file():
     ast_node = analyser.parse(source)
     count = analyser.count_comments(ast_node, source)
     assert count == 0
+
 
 def test_python_complex_integration():
     source = '''
@@ -215,10 +220,11 @@ def unused_function():
     ids = analyser.get_identifiers(ast_node)
     assert set(['main', 'inner_function']).issubset(ids.functions)
     assert set(['Foo']).issubset(ids.classes)
-    assert set(['x', 'y', 'z', 'a', 'b', 'c', 'd', 'e', 'f']).issubset(ids.variables) # currently fails
+    assert set(['x', 'y', 'z', 'a', 'b', 'c', 'd', 'e', 'f']
+               ).issubset(ids.variables)  # currently fails
     assert analyser.count_comments(ast_node, source) == 8
     unused = analyser.find_unused(ast_node)
-    unused_functions = set([name for name,_ in unused.unused_functions])
-    unused_variables = set([name for name,_ in unused.unused_variables])
+    unused_functions = set([name for name, _ in unused.unused_functions])
+    unused_variables = set([name for name, _ in unused.unused_variables])
     assert set(['z', 'a', 'b', 'c', 'd', 'e', 'f']).issubset(unused_variables)
     assert 'unused_function' in unused_functions
